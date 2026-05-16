@@ -15,7 +15,7 @@ from config import (
 )
 from alpaca_stream import AlpacaCryptoStream
 from data_processor import DataProcessor
-from groq_analyst import GroqAnalyst
+from claude_analyst import GroqAnalyst
 from risk_manager import RiskManager
 from order_manager import OrderManager
 from trade_logger import TradeLogger
