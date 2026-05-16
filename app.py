@@ -2,6 +2,7 @@
 # app.py — Flask Orchestrator + Dashboard API
 # ============================================================
 
+import os
 import logging
 import threading
 from datetime import datetime, timezone
@@ -14,10 +15,16 @@ from config import (
 )
 from alpaca_stream import AlpacaCryptoStream
 from data_processor import DataProcessor
-from claude_analyst import GroqAnalyst
+from groq_analyst import GroqAnalyst
 from risk_manager import RiskManager
 from order_manager import OrderManager
 from trade_logger import TradeLogger
+
+# ----------------------------
+# Environment Configuration
+# ----------------------------
+PORT = int(os.environ.get("PORT", 5000))
+IS_RENDER = os.environ.get("RENDER", False)
 
 # ----------------------------
 # Logging
@@ -66,7 +73,7 @@ def is_session_active() -> bool:
 
 async def on_htf_bar(pair, bar, htf_df, ltf_df):
     """
-    Fires on every completed 1HR candle.
+    Fires on every completed HTF candle (1HR or configured timeframe).
     Runs full analysis and submits order if conditions are met.
     """
     logger.info(f"[APP] HTF bar received: {pair}")
@@ -82,7 +89,7 @@ async def on_htf_bar(pair, bar, htf_df, ltf_df):
         logger.warning(f"[APP] Insufficient data for {pair}. Skipping.")
         return
 
-    # Claude analysis
+    # Groq analysis
     signal = analyst.analyze(pair, htf, ltf, session_active=session_active)
 
     # Log every signal (including WAITs — full audit trail)
@@ -109,7 +116,7 @@ async def on_htf_bar(pair, bar, htf_df, ltf_df):
 
 async def on_ltf_bar(pair, bar, htf_df, ltf_df):
     """
-    Fires on every completed 5MIN candle.
+    Fires on every completed LTF candle (5MIN/15MIN configured timeframe).
     Syncs order statuses to catch fills quickly.
     """
     order_manager.sync_order_statuses()
@@ -129,7 +136,12 @@ def start_stream():
     balance = order_manager.get_account_balance()
     risk_manager.start_day(balance)
     logger.info(f"[APP] Starting stream. Balance: ${balance:,.2f}")
-    stream.start()
+    
+    try:
+        stream.start()
+    except Exception as e:
+        logger.error(f"[APP] Stream error: {e}")
+        raise
 
 
 # ----------------------------
@@ -164,6 +176,17 @@ def api_daily():
 @app.route("/api/risk")
 def api_risk():
     return jsonify(risk_manager.get_daily_summary())
+
+
+@app.route("/health")
+def health_check():
+    """Health check endpoint for Render monitoring"""
+    return jsonify({
+        "status": "healthy",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "balance": order_manager.get_account_balance(),
+        "open_trades": len(order_manager.get_open_orders())
+    })
 
 
 # ----------------------------
@@ -332,7 +355,7 @@ DASHBOARD_HTML = """
 <body>
 
 <header>
-  <h1>⚡ Forex AI Trading Bot</h1>
+  <h1>⚡ Crypto AI Trading Bot</h1>
   <span class="live-badge">PAPER TRADING</span>
 </header>
 
@@ -363,7 +386,7 @@ DASHBOARD_HTML = """
         </tr>
       </thead>
       <tbody id="open-orders-body">
-        <tr><td colspan="9" class="no-data">No open positions</td></tr>
+        <tr><td colspan="9" class="no-data">No open positions</td</tr>
       </tbody>
     </table>
   </div>
@@ -380,14 +403,14 @@ DASHBOARD_HTML = """
         </tr>
       </thead>
       <tbody id="orders-body">
-        <tr><td colspan="11" class="no-data">No trades yet</td></tr>
+        <tr><td colspan="11" class="no-data">No trades yet</td</tr>
       </tbody>
     </table>
   </div>
 
-  <!-- Recent Claude Signals -->
+  <!-- Recent AI Signals -->
   <div class="section">
-    <h2>Recent Claude Signals (incl. WAITs)</h2>
+    <h2>Recent AI Signals (incl. WAITs)</h2>
     <table>
       <thead>
         <tr>
@@ -396,7 +419,7 @@ DASHBOARD_HTML = """
         </tr>
       </thead>
       <tbody id="signals-body">
-        <tr><td colspan="6" class="no-data">No signals yet</td></tr>
+        <tr><td colspan="6" class="no-data">No signals yet</td</tr>
       </tbody>
     </table>
   </div>
@@ -472,7 +495,7 @@ DASHBOARD_HTML = """
         <td>${fmt(o.risk_reward)}R</td>
         <td>${badge(o.status, o.status)}</td>
         <td>${fmtTime(o.submitted_at)}</td>
-      </tr>
+      40
     `).join('');
   }
 
@@ -501,7 +524,7 @@ DASHBOARD_HTML = """
           ${o.confluences ? '<div class="confluences">✓ ' + JSON.parse(o.confluences || '[]').join(' · ') + '</div>' : ''}
           ${o.warnings ? '<div class="warnings">⚠ ' + JSON.parse(o.warnings || '[]').join(' · ') + '</div>' : ''}
         </td>
-      </tr>
+      60
     `).join('');
   }
 
@@ -553,6 +576,16 @@ if __name__ == "__main__":
     stream_thread = threading.Thread(target=start_stream, daemon=True)
     stream_thread.start()
 
-    # Start Flask
-    logger.info(f"[APP] Dashboard running at http://{FLASK_HOST}:{FLASK_PORT}")
-    app.run(host=FLASK_HOST, port=FLASK_PORT, debug=FLASK_DEBUG, use_reloader=False)
+    # Get port from environment (for Render compatibility)
+    port = int(os.environ.get("PORT", FLASK_PORT))
+    
+    if IS_RENDER:
+        # Production mode on Render
+        logger.info(f"[APP] Running in PRODUCTION mode on Render")
+        logger.info(f"[APP] Dashboard running at http://0.0.0.0:{port}")
+        app.run(host="0.0.0.0", port=port, debug=False)
+    else:
+        # Local development mode
+        logger.info(f"[APP] Running in DEVELOPMENT mode")
+        logger.info(f"[APP] Dashboard running at http://{FLASK_HOST}:{FLASK_PORT}")
+        app.run(host=FLASK_HOST, port=FLASK_PORT, debug=FLASK_DEBUG, use_reloader=False)

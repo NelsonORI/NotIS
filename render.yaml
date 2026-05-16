@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: crypto-trading-bot
+    runtime: python
+    repo: https://github.com/yourusername/crypto-trading-bot
+    plan: free
+    region: oregon
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --worker-class sync --timeout 120 --workers 1
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      - key: RENDER
+        value: true
+      - key: ALPACA_API_KEY
+        sync: false
+      - key: ALPACA_SECRET_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
