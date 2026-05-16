@@ -1,0 +1,210 @@
+# ============================================
+# Python & Virtual Environment
+# ============================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.coverage
+.tox/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+
+# ============================================
+# Environment & Secrets (CRITICAL - Never commit)
+# ============================================
+.env
+.env.local
+.env.production
+.env.paper
+.env.live
+.env.backup
+
+# API Keys and Credentials
+secrets.py
+keys.py
+*_keys.py
+*_secrets.py
+config_local.py
+
+# ============================================
+# Database Files (Contains trade history & performance)
+# ============================================
+*.db
+*.sqlite
+*.sqlite3
+trades.db
+trades.db-journal
+*.db-shm
+*.db-wal
+*.db.backup
+
+# ============================================
+# Log Files (Contains trading activity & decisions)
+# ============================================
+*.log
+trading_bot.log
+logs/
+*.log.*
+*.log.gz
+log_*.txt
+
+# ============================================
+# Trading Bot Specific
+# ============================================
+# Backtest results
+backtest_results/
+backtests/
+*.backtest.json
+*.backtest.csv
+backtest_*.html
+
+# Trade exports
+trade_exports/
+exports/
+*.trades.csv
+trade_history_*.csv
+performance_*.json
+
+# Checkpoint/backup files
+*.checkpoint
+*.backup
+*.bak
+*.tmp
+
+# Session data
+*.session
+*.state
+
+# ============================================
+# IDE & Editor Files
+# ============================================
+# PyCharm
+.idea/
+*.iml
+.idea_modules/
+
+# VS Code
+.vscode/
+*.code-workspace
+.settings/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+.*.swp
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# Jupyter Notebooks (if using for analysis)
+.ipynb_checkpoints/
+*.ipynb
+
+# ============================================
+# OS Generated Files
+# ============================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ============================================
+# Flask & Web Development
+# ============================================
+instance/
+.webassets-cache
+*.pid
+flask_session/
+.env.flask
+
+# ============================================
+# Testing & Reports
+# ============================================
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+pytestdebug.log
+test_results/
+
+# ============================================
+# Docker (if using)
+# ============================================
+*.pid
+docker-compose.override.yml
+.docker/
+docker/volumes/
+
+# ============================================
+# Documentation & Temporary Files
+# ============================================
+docs/_build/
+site/
+*.tmp
+*.temp
+*.cache
+*.swp
+
+# ============================================
+# Performance Reports (Generated)
+# ============================================
+performance_*.html
+trade_analysis_*.csv
+daily_report_*.json
+weekly_report_*.json
+
+# ============================================
+# Alpaca & Brokerage Specific
+# ============================================
+alpaca_*.json
+broker_state.json
+oauth_token.json
+
+# ============================================
+# Data files (if you store any)
+# ============================================
+data/
+*.parquet
+*.feather
+*.h5
+*.hdf5
+
+# ============================================
+# Encryption & Security
+# ============================================
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+*.asc
